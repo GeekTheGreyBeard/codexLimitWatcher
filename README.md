@@ -21,13 +21,21 @@ This project uses the same ChatGPT OAuth issuer and localhost callback pattern u
 
 ## Screenshots
 
-Light mode:
+Normal light mode:
 
-![Codex Limit Watcher light mode](docs/assets/screenshots/codex-limit-watcher-light.png)
+![Codex Limit Watcher normal light mode](docs/assets/screenshots/codex-limit-watcher-normal-light.png)
 
-Dark mode:
+Normal dark mode:
 
-![Codex Limit Watcher dark mode](docs/assets/screenshots/codex-limit-watcher-dark.png)
+![Codex Limit Watcher normal dark mode](docs/assets/screenshots/codex-limit-watcher-normal-dark.png)
+
+Mini light mode:
+
+![Codex Limit Watcher mini light mode](docs/assets/screenshots/codex-limit-watcher-mini-light.png)
+
+Mini dark mode:
+
+![Codex Limit Watcher mini dark mode](docs/assets/screenshots/codex-limit-watcher-mini-dark.png)
 
 ## Run
 
