@@ -1,0 +1,17 @@
+{
+  "name": "codex-limit-watcher",
+  "version": "0.1.0",
+  "description": "Wayland-friendly Linux desktop watcher for Codex 5-hour and weekly usage limit resets.",
+  "main": "src/main.js",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "start:wayland": "electron . --ozone-platform=wayland --enable-features=WaylandWindowDecorations --disable-features=Vulkan --disable-gpu",
+    "status": "node src/usageReader.js",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "electron": "^42.3.3"
+  }
+}

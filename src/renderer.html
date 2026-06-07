@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Codex Limit Watcher</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Codex Limit Watcher</h1>
+          <p id="subtitle">Waiting for usage data</p>
+        </div>
+        <div class="actions">
+          <button id="refreshButton" title="Refresh usage data" aria-label="Refresh usage data">Refresh</button>
+        </div>
+      </header>
+      <section id="statusBanner" class="status-banner">Loading local Codex usage state</section>
+      <section id="windowGrid" class="window-grid"></section>
+      <section class="details">
+        <div>
+          <h2>Source</h2>
+          <p id="sourceText">No source file yet</p>
+        </div>
+        <button id="openSourceButton" disabled>Open</button>
+      </section>
+      <section class="details compact">
+        <div>
+          <h2>Scan</h2>
+          <p id="scanText">No scan has completed</p>
+        </div>
+      </section>
+    </main>
+    <script src="./renderer.js"></script>
+  </body>
+</html>
