@@ -17,6 +17,16 @@ Standalone Linux desktop app for monitoring Codex 5-hour and weekly usage-limit 
 
 This project uses the same ChatGPT OAuth issuer and localhost callback pattern used by the official Codex client. The Codex usage endpoint is not yet a stable public OpenAI API, so response normalization is intentionally isolated in `src/usageReader.js`.
 
+## Screenshots
+
+Light mode:
+
+![Codex Limit Watcher light mode](docs/assets/screenshots/codex-limit-watcher-light.png)
+
+Dark mode:
+
+![Codex Limit Watcher dark mode](docs/assets/screenshots/codex-limit-watcher-dark.png)
+
 ## Run
 
 ```bash
