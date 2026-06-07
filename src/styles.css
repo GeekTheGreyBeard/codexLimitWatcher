@@ -18,6 +18,10 @@
   --critical-bg: #fff0f0;
   --critical-border: #e2a3a3;
   --critical-text: #6b1515;
+  --button-bg: #ffffff;
+  --button-disabled-bg: #eef2f4;
+  --button-disabled-text: #758692;
+  --focus: #2f7f6a;
   background: var(--bg);
   color: var(--text);
 }
@@ -29,6 +33,7 @@
 body {
   margin: 0;
   background: var(--bg);
+  color: var(--text);
 }
 
 body.dark {
@@ -50,6 +55,10 @@ body.dark {
   --critical-bg: #421f22;
   --critical-border: #9b5157;
   --critical-text: #ffd0d4;
+  --button-bg: #2a3238;
+  --button-disabled-bg: #20272c;
+  --button-disabled-text: #84939c;
+  --focus: #74c4ae;
 }
 
 .shell {
@@ -88,11 +97,23 @@ button,
 select {
   border: 1px solid var(--control-border);
   border-radius: 6px;
-  background: var(--panel);
+  background: var(--button-bg);
   color: var(--text);
   font-weight: 650;
   padding: 10px 14px;
   min-width: 88px;
+}
+
+select option {
+  background: var(--panel);
+  color: var(--text);
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 button {
@@ -100,8 +121,10 @@ button {
 }
 
 button:disabled {
+  background: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
   cursor: default;
-  opacity: 0.55;
+  opacity: 1;
 }
 
 .actions {

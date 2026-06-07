@@ -18,7 +18,7 @@ let refreshTimer = null;
 const settings = {
   autoRefresh: localStorage.getItem("autoRefresh") === "true",
   darkMode: localStorage.getItem("darkMode") === "true",
-  refreshInterval: ["5", "10", "15", "30"].includes(localStorage.getItem("refreshInterval"))
+  refreshInterval: ["1", "5", "10", "15", "30"].includes(localStorage.getItem("refreshInterval"))
     ? localStorage.getItem("refreshInterval")
     : "5"
 };
