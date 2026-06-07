@@ -17,6 +17,8 @@
           <button id="signInButton" title="Sign in with ChatGPT" aria-label="Sign in with ChatGPT">Sign in</button>
           <button id="signOutButton" title="Sign out" aria-label="Sign out" disabled>Sign out</button>
           <button id="refreshButton" title="Refresh usage data" aria-label="Refresh usage data">Refresh</button>
+          <button id="miniModeButton" title="Toggle mini mode" aria-label="Toggle mini mode">Mini</button>
+          <button id="aboutButton" title="About Codex Limit Watcher" aria-label="About Codex Limit Watcher">About</button>
         </div>
       </header>
       <section class="controls" aria-label="Display and refresh controls">
@@ -49,6 +51,19 @@
         <button id="showAccountButton" disabled>Show Account Number</button>
       </section>
     </main>
+    <dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle">
+      <form method="dialog">
+        <div class="about-head">
+          <h2 id="aboutTitle">Codex Limit Watcher</h2>
+          <button class="icon-button" value="cancel" title="Close" aria-label="Close About dialog">X</button>
+        </div>
+        <p>Desktop watcher for Codex usage-limit reset windows.</p>
+        <div class="about-links">
+          <button type="button" data-url="https://github.com/GeekTheGreyBeard">GitHub Profile</button>
+          <button type="button" data-url="https://reesadmin.com">ReesAdmin.com</button>
+        </div>
+      </form>
+    </dialog>
     <script src="./renderer.js"></script>
   </body>
 </html>

@@ -8,7 +8,9 @@ Standalone Linux desktop app for monitoring Codex 5-hour and weekly usage-limit 
 - Authenticated Codex usage fetch for 5-hour and weekly reset windows.
 - Optional auto-refresh with `1m`, `5m`, `10m`, `15m`, and `30m` intervals; fresh installs default to `5m`.
 - Light and dark display modes.
+- Mini mode for a compact, scrollbar-free status view.
 - Account number masking by default, with an explicit show/hide control.
+- About dialog with links to GeekTheGreyBeard's GitHub profile and ReesAdmin.com.
 - Wayland-friendly Electron launch path for Kubuntu and other Linux desktops.
 - Local token storage in the app user-data directory with owner-only file permissions.
 - MIT licensed for open-source release.

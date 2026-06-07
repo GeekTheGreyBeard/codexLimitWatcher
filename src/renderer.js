@@ -4,6 +4,9 @@ const statusBanner = document.getElementById("statusBanner");
 const scanText = document.getElementById("scanText");
 const showAccountButton = document.getElementById("showAccountButton");
 const refreshButton = document.getElementById("refreshButton");
+const miniModeButton = document.getElementById("miniModeButton");
+const aboutButton = document.getElementById("aboutButton");
+const aboutDialog = document.getElementById("aboutDialog");
 const signInButton = document.getElementById("signInButton");
 const signOutButton = document.getElementById("signOutButton");
 const autoRefreshToggle = document.getElementById("autoRefreshToggle");
@@ -21,6 +24,7 @@ const accountState = {
 const settings = {
   autoRefresh: localStorage.getItem("autoRefresh") === "true",
   darkMode: localStorage.getItem("darkMode") === "true",
+  miniMode: localStorage.getItem("miniMode") === "true",
   refreshInterval: ["1", "5", "10", "15", "30"].includes(localStorage.getItem("refreshInterval"))
     ? localStorage.getItem("refreshInterval")
     : "5"
@@ -98,6 +102,13 @@ function applyTheme() {
   darkModeToggle.checked = settings.darkMode;
 }
 
+function applyMiniMode() {
+  document.body.classList.toggle("mini", settings.miniMode);
+  miniModeButton.textContent = settings.miniMode ? "Normal" : "Mini";
+  miniModeButton.setAttribute("aria-label", settings.miniMode ? "Switch to normal mode" : "Switch to mini mode");
+  window.codexUsage.setMiniMode(settings.miniMode);
+}
+
 function configureAutoRefresh() {
   if (refreshTimer) {
     clearInterval(refreshTimer);
@@ -114,6 +125,7 @@ function configureAutoRefresh() {
 function saveSettings() {
   localStorage.setItem("autoRefresh", String(settings.autoRefresh));
   localStorage.setItem("darkMode", String(settings.darkMode));
+  localStorage.setItem("miniMode", String(settings.miniMode));
   localStorage.setItem("refreshInterval", settings.refreshInterval);
 }
 
@@ -167,6 +179,24 @@ showAccountButton.addEventListener("click", () => {
   accountState.showAccountNumber = !accountState.showAccountNumber;
   renderAccount();
 });
+miniModeButton.addEventListener("click", () => {
+  settings.miniMode = !settings.miniMode;
+  saveSettings();
+  applyMiniMode();
+});
+aboutButton.addEventListener("click", () => {
+  aboutDialog.showModal();
+});
+aboutDialog.addEventListener("click", (event) => {
+  if (event.target === aboutDialog) {
+    aboutDialog.close();
+  }
+});
+aboutDialog.querySelectorAll("[data-url]").forEach((button) => {
+  button.addEventListener("click", () => {
+    window.codexUsage.openLink(button.dataset.url);
+  });
+});
 autoRefreshToggle.addEventListener("change", () => {
   settings.autoRefresh = autoRefreshToggle.checked;
   saveSettings();
@@ -183,5 +213,6 @@ darkModeToggle.addEventListener("change", () => {
   applyTheme();
 });
 applyTheme();
+applyMiniMode();
 configureAutoRefresh();
 refresh();
