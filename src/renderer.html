@@ -19,8 +19,35 @@
           <button id="refreshButton" title="Refresh usage data" aria-label="Refresh usage data">Refresh</button>
         </div>
       </header>
+      <section class="controls" aria-label="Display and refresh controls">
+        <label class="control-check">
+          <input id="autoRefreshToggle" type="checkbox">
+          <span>Auto-refresh</span>
+        </label>
+        <label class="control-select">
+          <span>Interval</span>
+          <select id="refreshIntervalSelect">
+            <option value="5">5m</option>
+            <option value="10">10m</option>
+            <option value="15">15m</option>
+            <option value="30">30m</option>
+          </select>
+        </label>
+        <label class="control-check">
+          <input id="darkModeToggle" type="checkbox">
+          <span>Dark mode</span>
+        </label>
+      </section>
       <section id="statusBanner" class="status-banner">Loading Codex usage state</section>
       <section id="windowGrid" class="window-grid"></section>
+      <section class="details token-section">
+        <div>
+          <h2>Token Counts</h2>
+          <div id="tokenGrid" class="token-grid">
+            <p>No token counts yet</p>
+          </div>
+        </div>
+      </section>
       <section class="details">
         <div>
           <h2>Source</h2>
