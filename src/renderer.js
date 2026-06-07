@@ -4,6 +4,8 @@ const statusBanner = document.getElementById("statusBanner");
 const sourceText = document.getElementById("sourceText");
 const scanText = document.getElementById("scanText");
 const refreshButton = document.getElementById("refreshButton");
+const signInButton = document.getElementById("signInButton");
+const signOutButton = document.getElementById("signOutButton");
 const openSourceButton = document.getElementById("openSourceButton");
 
 let lastSourceFile = null;
@@ -48,14 +50,19 @@ async function refresh() {
   refreshButton.disabled = true;
   refreshButton.textContent = "Refreshing";
   try {
+    const auth = await window.codexUsage.auth();
+    signInButton.disabled = auth.signedIn;
+    signOutButton.disabled = !auth.signedIn;
+    scanText.textContent = auth.signedIn
+      ? `Signed in${auth.planType ? ` on ${auth.planType}` : ""}${auth.accountId ? `; account ${auth.accountId}` : ""}`
+      : "Signed out";
     const snapshot = await window.codexUsage.get();
     if (snapshot.status !== "ok") {
-      subtitle.textContent = "No usage event found";
+      subtitle.textContent = snapshot.status === "signed-out" ? "Sign in required" : "Usage data unavailable";
       statusBanner.textContent = snapshot.message;
-      statusBanner.className = "status-banner warning";
+      statusBanner.className = snapshot.status === "auth-error" ? "status-banner critical" : "status-banner warning";
       windowGrid.innerHTML = "";
-      sourceText.textContent = "No source file yet";
-      scanText.textContent = `${snapshot.scannedFiles} files scanned, ${snapshot.scannedEvents} usage events`;
+      sourceText.textContent = snapshot.sourceUrl ?? "OAuth";
       openSourceButton.disabled = true;
       return;
     }
@@ -67,10 +74,9 @@ async function refresh() {
       : `5-hour reset in ${primary?.remainingText ?? "unknown"}; weekly reset in ${weekly?.remainingText ?? "unknown"}`;
     statusBanner.className = snapshot.rateLimitReachedType ? "status-banner critical" : "status-banner";
     windowGrid.innerHTML = snapshot.windows.map(renderWindow).join("");
-    lastSourceFile = snapshot.sourceFile;
-    sourceText.textContent = snapshot.sourceFile;
-    scanText.textContent = `${snapshot.scannedFiles} files scanned, ${snapshot.scannedEvents} usage events`;
-    openSourceButton.disabled = false;
+    lastSourceFile = snapshot.sourceFile ?? null;
+    sourceText.textContent = snapshot.sourceUrl ?? snapshot.sourceFile ?? "OAuth";
+    openSourceButton.disabled = !lastSourceFile;
   } finally {
     refreshButton.disabled = false;
     refreshButton.textContent = "Refresh";
@@ -78,6 +84,21 @@ async function refresh() {
 }
 
 refreshButton.addEventListener("click", refresh);
+signInButton.addEventListener("click", async () => {
+  signInButton.disabled = true;
+  statusBanner.textContent = "Opening ChatGPT sign-in";
+  try {
+    await window.codexUsage.signIn();
+  } catch (error) {
+    statusBanner.textContent = error.message;
+    statusBanner.className = "status-banner critical";
+  }
+  await refresh();
+});
+signOutButton.addEventListener("click", async () => {
+  await window.codexUsage.signOut();
+  await refresh();
+});
 openSourceButton.addEventListener("click", () => window.codexUsage.openSource(lastSourceFile));
 refresh();
 setInterval(refresh, 60000);

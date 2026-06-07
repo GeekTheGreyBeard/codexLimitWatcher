@@ -1,9 +1,10 @@
 {
   "name": "codex-limit-watcher",
   "version": "0.1.0",
-  "description": "Wayland-friendly Linux desktop watcher for Codex 5-hour and weekly usage limit resets.",
+  "description": "Standalone Linux desktop watcher for Codex 5-hour and weekly usage limit resets.",
   "main": "src/main.js",
-  "private": true,
+  "private": false,
+  "license": "MIT",
   "type": "commonjs",
   "scripts": {
     "start": "electron .",

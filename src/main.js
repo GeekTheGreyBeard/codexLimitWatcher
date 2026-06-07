@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("node:path");
-const { readLatestUsageSnapshot } = require("./usageReader");
+const { getAuthSummary, signIn, signOut } = require("./oauthClient");
+const { readUsageSnapshot } = require("./usageReader");
 
 if (process.platform === "linux") {
   app.commandLine.appendSwitch("enable-features", "WaylandWindowDecorations");
@@ -26,7 +27,10 @@ function createWindow() {
   win.loadFile(path.join(__dirname, "renderer.html"));
 }
 
-ipcMain.handle("usage:get", () => readLatestUsageSnapshot());
+ipcMain.handle("auth:get", () => getAuthSummary(app.getPath("userData")));
+ipcMain.handle("auth:signIn", () => signIn(app.getPath("userData")));
+ipcMain.handle("auth:signOut", () => signOut(app.getPath("userData")));
+ipcMain.handle("usage:get", () => readUsageSnapshot({ userDataPath: app.getPath("userData") }));
 ipcMain.handle("usage:openSource", async (_event, sourceFile) => {
   if (!sourceFile) return false;
   await shell.openPath(sourceFile);

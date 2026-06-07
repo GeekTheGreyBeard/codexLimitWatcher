@@ -1,21 +1,18 @@
-# Codex Limit Watcher - Production
+# Codex Limit Watcher
 
-Wayland-friendly Linux desktop app for monitoring Codex usage-limit windows on Kubuntu 26.04.
+Standalone Linux desktop app for monitoring Codex 5-hour and weekly usage-limit resets.
 
-## Purpose
+## Features
 
-Display the latest local Codex usage-limit snapshot with:
+- ChatGPT OAuth sign-in using the Codex public client and PKCE.
+- Authenticated Codex usage fetch for 5-hour and weekly reset windows.
+- Wayland-friendly Electron launch path for Kubuntu and other Linux desktops.
+- Local token storage in the app user-data directory with owner-only file permissions.
+- MIT licensed for open-source release.
 
-- 5-hour usage percentage and reset countdown.
-- Weekly usage percentage and reset countdown.
-- Source session log used for the current reading.
-- Scan evidence for local troubleshooting.
+## Status
 
-## Data Source
-
-The app reads local OpenClaw/Codex JSONL session logs and extracts `event_msg` events where `payload.type` is `token_count`. Those events include `payload.rate_limits.primary` for the 300-minute window and `payload.rate_limits.secondary` for the 10080-minute weekly window.
-
-No credentials are read, requested, stored, or transmitted.
+This project uses the same ChatGPT OAuth issuer and localhost callback pattern used by the official Codex client. The Codex usage endpoint is not yet a stable public OpenAI API, so response normalization is intentionally isolated in `src/usageReader.js`.
 
 ## Run
 
@@ -24,29 +21,36 @@ npm install
 npm run start:wayland
 ```
 
-CLI status check:
+CLI status check using local development fallback:
 
 ```bash
-npm run status
+CODEX_LIMIT_WATCHER_LOCAL_FALLBACK=1 npm run status
 ```
 
-Install the production launcher:
+Install the desktop launcher:
 
 ```bash
 ./scripts/install-desktop-entry.sh
 ```
 
-## Project Placement
+## Authentication
 
-- Filesystem production path: `/run/media/gtgb/GTGB-Files/OpenClaw/Projects/patriciAI/codexLimitWatcher-prod/`
-- Obsidian documentation path: `OpenClaw/Projects/patriciAI/codexLimitWatcher-prod/`
-- Promoted from staging on 2026-06-07 after local tests, audit, live status verification, and Wayland launch smoke test.
+1. Launch the app.
+2. Select `Sign in`.
+3. Complete ChatGPT sign-in in the browser.
+4. Return to the app after the localhost callback succeeds.
+
+Tokens are stored locally for this app only and are not printed by tests or status output.
 
 ## Verification
 
 ```bash
 npm test
-npm run status
+npm audit
 ```
 
-For Wayland verification, launch with `npm run start:wayland` and confirm the app opens under the active Kubuntu Wayland session.
+For Wayland verification, launch with `npm run start:wayland` and confirm the app opens under the active Wayland session.
+
+## License
+
+MIT

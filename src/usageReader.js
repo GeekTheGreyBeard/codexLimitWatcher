@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
+const { fetchCodexUsage } = require("./oauthClient");
 
 const DEFAULT_ROOTS = [
   path.join(os.homedir(), ".openclaw", "agents"),
@@ -47,6 +48,22 @@ function normalizeRateLimits(raw) {
   };
 }
 
+function normalizeWhamUsage(raw) {
+  if (!isJsonObject(raw)) return null;
+  const rateLimit = raw.rate_limit ?? raw.rateLimit ?? raw.rate_limits ?? raw.rateLimits;
+  if (!isJsonObject(rateLimit)) return null;
+  const primary = rateLimit.primary_window ?? rateLimit.primaryWindow ?? rateLimit.primary;
+  const secondary = rateLimit.secondary_window ?? rateLimit.secondaryWindow ?? rateLimit.secondary;
+  return {
+    limitId: raw.limit_id ?? raw.limitId ?? "codex",
+    limitName: raw.limit_name ?? raw.limitName ?? null,
+    primary: normalizeUsageWindow(primary, "5-hour"),
+    secondary: normalizeUsageWindow(secondary, "weekly"),
+    planType: raw.plan_type ?? raw.planType ?? null,
+    rateLimitReachedType: raw.rate_limit_reached_type ?? raw.rateLimitReachedType ?? null
+  };
+}
+
 function normalizeWindow(raw, fallbackName) {
   if (!isJsonObject(raw)) return null;
   const windowMinutes = Number(raw.window_minutes ?? raw.windowMinutes ?? 0);
@@ -57,6 +74,76 @@ function normalizeWindow(raw, fallbackName) {
     windowMinutes,
     resetsAt: Number.isFinite(resetsAtSeconds) ? resetsAtSeconds : 0,
     usedPercent: Number.isFinite(usedPercent) ? usedPercent : null
+  };
+}
+
+function normalizeUsageWindow(raw, fallbackName) {
+  if (!isJsonObject(raw)) return null;
+  const windowSeconds = Number(
+    raw.limit_window_seconds ?? raw.limitWindowSeconds ?? raw.window_seconds ?? raw.windowSeconds ?? 0
+  );
+  const windowMinutes = Number(raw.window_minutes ?? raw.windowMinutes ?? windowSeconds / 60);
+  const resetsAtSeconds = Number(raw.reset_at ?? raw.resetAt ?? raw.resets_at ?? raw.resetsAt ?? 0);
+  const usedPercent = Number(raw.used_percent ?? raw.usedPercent ?? NaN);
+  return {
+    name: windowMinutes === 300 ? "5-hour" : windowMinutes === 10080 ? "weekly" : fallbackName,
+    windowMinutes,
+    resetsAt: Number.isFinite(resetsAtSeconds) ? resetsAtSeconds : 0,
+    usedPercent: Number.isFinite(usedPercent) ? usedPercent : null
+  };
+}
+
+async function readUsageSnapshot(options = {}) {
+  const now = options.now ?? Date.now();
+  if (options.userDataPath) {
+    try {
+      const usage = await fetchCodexUsage(options.userDataPath);
+      if (usage) return summarizeAuthenticatedUsage(usage, { now });
+    } catch (error) {
+      return {
+        status: "auth-error",
+        now: new Date(now).toISOString(),
+        message: error.message,
+        source: "oauth"
+      };
+    }
+  }
+  if (process.env.CODEX_LIMIT_WATCHER_LOCAL_FALLBACK === "1" || options.allowLocalFallback) {
+    return readLatestUsageSnapshot({ ...options, now });
+  }
+  return {
+    status: "signed-out",
+    now: new Date(now).toISOString(),
+    message: "Sign in with ChatGPT to read Codex usage limits.",
+    source: "oauth"
+  };
+}
+
+function summarizeAuthenticatedUsage(usage, meta) {
+  const rateLimits = normalizeWhamUsage(usage.body);
+  if (!rateLimits) {
+    return {
+      status: "no-data",
+      now: new Date(meta.now).toISOString(),
+      account: usage.account,
+      sourceUrl: usage.sourceUrl,
+      source: "oauth",
+      message: "The authenticated Codex usage response did not include recognizable rate-limit windows."
+    };
+  }
+  return {
+    status: "ok",
+    now: new Date(meta.now).toISOString(),
+    sourceUrl: usage.sourceUrl,
+    source: "oauth",
+    account: usage.account,
+    observedAt: new Date(meta.now).toISOString(),
+    planType: rateLimits.planType ?? usage.account?.planType ?? null,
+    rateLimitReachedType: rateLimits.rateLimitReachedType,
+    windows: [rateLimits.primary, rateLimits.secondary]
+      .filter(Boolean)
+      .map((window) => summarizeWindow(window, meta.now)),
+    tokenUsage: usage.body.token_usage ?? usage.body.tokenUsage ?? null
   };
 }
 
@@ -161,13 +248,23 @@ function formatDuration(ms) {
 }
 
 if (require.main === module) {
-  console.log(JSON.stringify(readLatestUsageSnapshot(), null, 2));
+  readUsageSnapshot({ allowLocalFallback: process.env.CODEX_LIMIT_WATCHER_LOCAL_FALLBACK === "1" })
+    .then((snapshot) => {
+      console.log(JSON.stringify(snapshot, null, 2));
+    })
+    .catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+    });
 }
 
 module.exports = {
   extractTokenCountEvent,
   findSessionFiles,
   formatDuration,
+  normalizeWhamUsage,
+  readUsageSnapshot,
   readLatestUsageSnapshot,
+  summarizeAuthenticatedUsage,
   summarizeSnapshot
 };

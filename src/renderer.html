@@ -14,22 +14,24 @@
           <p id="subtitle">Waiting for usage data</p>
         </div>
         <div class="actions">
+          <button id="signInButton" title="Sign in with ChatGPT" aria-label="Sign in with ChatGPT">Sign in</button>
+          <button id="signOutButton" title="Sign out" aria-label="Sign out" disabled>Sign out</button>
           <button id="refreshButton" title="Refresh usage data" aria-label="Refresh usage data">Refresh</button>
         </div>
       </header>
-      <section id="statusBanner" class="status-banner">Loading local Codex usage state</section>
+      <section id="statusBanner" class="status-banner">Loading Codex usage state</section>
       <section id="windowGrid" class="window-grid"></section>
       <section class="details">
         <div>
           <h2>Source</h2>
-          <p id="sourceText">No source file yet</p>
+          <p id="sourceText">Not connected</p>
         </div>
         <button id="openSourceButton" disabled>Open</button>
       </section>
       <section class="details compact">
         <div>
-          <h2>Scan</h2>
-          <p id="scanText">No scan has completed</p>
+          <h2>Account</h2>
+          <p id="scanText">Signed out</p>
         </div>
       </section>
     </main>
