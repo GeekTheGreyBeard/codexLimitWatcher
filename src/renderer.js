@@ -1,19 +1,22 @@
 const windowGrid = document.getElementById("windowGrid");
 const subtitle = document.getElementById("subtitle");
 const statusBanner = document.getElementById("statusBanner");
-const sourceText = document.getElementById("sourceText");
 const scanText = document.getElementById("scanText");
+const showAccountButton = document.getElementById("showAccountButton");
 const refreshButton = document.getElementById("refreshButton");
 const signInButton = document.getElementById("signInButton");
 const signOutButton = document.getElementById("signOutButton");
-const openSourceButton = document.getElementById("openSourceButton");
 const autoRefreshToggle = document.getElementById("autoRefreshToggle");
 const darkModeToggle = document.getElementById("darkModeToggle");
 const refreshIntervalSelect = document.getElementById("refreshIntervalSelect");
-const tokenGrid = document.getElementById("tokenGrid");
 
-let lastSourceFile = null;
 let refreshTimer = null;
+const accountState = {
+  signedIn: false,
+  planType: null,
+  accountId: null,
+  showAccountNumber: false
+};
 
 const settings = {
   autoRefresh: localStorage.getItem("autoRefresh") === "true",
@@ -26,18 +29,6 @@ const settings = {
 function pct(value) {
   if (value === null || value === undefined) return "Unknown";
   return `${Math.round(value)}%`;
-}
-
-function formatNumber(value) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "Unknown";
-  return new Intl.NumberFormat().format(value);
-}
-
-function labelFor(key) {
-  return key
-    .replace(/_/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function renderWindow(window) {
@@ -71,24 +62,35 @@ function renderWindow(window) {
   `;
 }
 
-function renderTokenCounts(tokenUsage) {
-  if (!tokenUsage || typeof tokenUsage !== "object") {
-    tokenGrid.innerHTML = "<p>No token counts in the latest usage response</p>";
+function maskedAccountId(accountId) {
+  if (!accountId) return "account unavailable";
+  return `account ending ${accountId.slice(-4).padStart(4, "*")}`;
+}
+
+function renderAccount() {
+  if (!accountState.signedIn) {
+    scanText.textContent = "Signed out";
+    showAccountButton.disabled = true;
+    showAccountButton.textContent = "Show Account Number";
     return;
   }
-  const entries = Object.entries(tokenUsage).filter(([, value]) => typeof value === "number" && Number.isFinite(value));
-  if (entries.length === 0) {
-    tokenGrid.innerHTML = "<p>No token counts in the latest usage response</p>";
-    return;
+  const planText = accountState.planType ? ` on ${accountState.planType}` : "";
+  const accountText = accountState.showAccountNumber
+    ? `account ${accountState.accountId ?? "unavailable"}`
+    : maskedAccountId(accountState.accountId);
+  scanText.textContent = `Signed in${planText}; ${accountText}`;
+  showAccountButton.disabled = !accountState.accountId;
+  showAccountButton.textContent = accountState.showAccountNumber ? "Hide Account Number" : "Show Account Number";
+}
+
+function updateAccount(auth) {
+  if (auth.accountId !== accountState.accountId) {
+    accountState.showAccountNumber = false;
   }
-  tokenGrid.innerHTML = entries
-    .map(([key, value]) => `
-      <article class="token-card">
-        <span>${labelFor(key)}</span>
-        <strong>${formatNumber(value)}</strong>
-      </article>
-    `)
-    .join("");
+  accountState.signedIn = auth.signedIn;
+  accountState.planType = auth.planType ?? null;
+  accountState.accountId = auth.accountId ?? null;
+  renderAccount();
 }
 
 function applyTheme() {
@@ -122,18 +124,13 @@ async function refresh() {
     const auth = await window.codexUsage.auth();
     signInButton.disabled = auth.signedIn;
     signOutButton.disabled = !auth.signedIn;
-    scanText.textContent = auth.signedIn
-      ? `Signed in${auth.planType ? ` on ${auth.planType}` : ""}${auth.accountId ? `; account ${auth.accountId}` : ""}`
-      : "Signed out";
+    updateAccount(auth);
     const snapshot = await window.codexUsage.get();
     if (snapshot.status !== "ok") {
       subtitle.textContent = snapshot.status === "signed-out" ? "Sign in required" : "Usage data unavailable";
       statusBanner.textContent = snapshot.message;
       statusBanner.className = snapshot.status === "auth-error" ? "status-banner critical" : "status-banner warning";
       windowGrid.innerHTML = "";
-      renderTokenCounts(null);
-      sourceText.textContent = snapshot.sourceUrl ?? "OAuth";
-      openSourceButton.disabled = true;
       return;
     }
     const primary = snapshot.windows.find((item) => item.windowMinutes === 300);
@@ -144,10 +141,6 @@ async function refresh() {
       : `5-hour reset in ${primary?.remainingText ?? "unknown"}; weekly reset in ${weekly?.remainingText ?? "unknown"}`;
     statusBanner.className = snapshot.rateLimitReachedType ? "status-banner critical" : "status-banner";
     windowGrid.innerHTML = snapshot.windows.map(renderWindow).join("");
-    renderTokenCounts(snapshot.tokenUsage);
-    lastSourceFile = snapshot.sourceFile ?? null;
-    sourceText.textContent = snapshot.sourceUrl ?? snapshot.sourceFile ?? "OAuth";
-    openSourceButton.disabled = !lastSourceFile;
   } finally {
     refreshButton.disabled = false;
     refreshButton.textContent = "Refresh";
@@ -170,6 +163,10 @@ signOutButton.addEventListener("click", async () => {
   await window.codexUsage.signOut();
   await refresh();
 });
+showAccountButton.addEventListener("click", () => {
+  accountState.showAccountNumber = !accountState.showAccountNumber;
+  renderAccount();
+});
 autoRefreshToggle.addEventListener("change", () => {
   settings.autoRefresh = autoRefreshToggle.checked;
   saveSettings();
@@ -185,7 +182,6 @@ darkModeToggle.addEventListener("change", () => {
   saveSettings();
   applyTheme();
 });
-openSourceButton.addEventListener("click", () => window.codexUsage.openSource(lastSourceFile));
 applyTheme();
 configureAutoRefresh();
 refresh();

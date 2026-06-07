@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("node:path");
 const { getAuthSummary, signIn, signOut } = require("./oauthClient");
 const { readUsageSnapshot } = require("./usageReader");
@@ -31,11 +31,6 @@ ipcMain.handle("auth:get", () => getAuthSummary(app.getPath("userData")));
 ipcMain.handle("auth:signIn", () => signIn(app.getPath("userData")));
 ipcMain.handle("auth:signOut", () => signOut(app.getPath("userData")));
 ipcMain.handle("usage:get", () => readUsageSnapshot({ userDataPath: app.getPath("userData") }));
-ipcMain.handle("usage:openSource", async (_event, sourceFile) => {
-  if (!sourceFile) return false;
-  await shell.openPath(sourceFile);
-  return true;
-});
 
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {

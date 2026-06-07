@@ -6,9 +6,9 @@ Standalone Linux desktop app for monitoring Codex 5-hour and weekly usage-limit 
 
 - ChatGPT OAuth sign-in using the Codex public client and PKCE.
 - Authenticated Codex usage fetch for 5-hour and weekly reset windows.
-- Token-count display when usage responses include token fields.
 - Optional auto-refresh with `1m`, `5m`, `10m`, `15m`, and `30m` intervals; fresh installs default to `5m`.
 - Light and dark display modes.
+- Account number masking by default, with an explicit show/hide control.
 - Wayland-friendly Electron launch path for Kubuntu and other Linux desktops.
 - Local token storage in the app user-data directory with owner-only file permissions.
 - MIT licensed for open-source release.
