@@ -67,7 +67,7 @@ body.dark {
   width: min(1100px, 100%);
   height: 100vh;
   margin: 0 auto;
-  padding: 28px;
+  padding: 20px 24px;
   overflow: hidden;
 }
 
@@ -76,7 +76,7 @@ body.dark {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 h1,
@@ -86,7 +86,7 @@ p {
 }
 
 h1 {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -104,7 +104,7 @@ select {
   background: var(--button-bg);
   color: var(--text);
   font-weight: 650;
-  padding: 10px 14px;
+  padding: 9px 14px;
   min-width: 88px;
 }
 
@@ -144,8 +144,8 @@ button:disabled {
   border: 1px solid var(--border);
   background: var(--panel);
   border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 18px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
 }
 
 .control-check,
@@ -168,8 +168,8 @@ button:disabled {
   background: var(--ok-bg);
   color: var(--ok-text);
   border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 18px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
   font-weight: 650;
 }
 
@@ -189,15 +189,15 @@ button:disabled {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .limit-card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 18px;
-  min-height: 260px;
+  padding: 16px;
+  min-height: 218px;
 }
 
 .limit-card.warning {
@@ -212,7 +212,7 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .limit-card h2,
@@ -253,27 +253,27 @@ button:disabled {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin: 18px 0;
+  margin: 12px 0;
 }
 
 .stats div,
 .reset {
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px 12px;
   background: var(--panel-soft);
 }
 
 .stats strong {
   display: block;
   margin-top: 4px;
-  font-size: 30px;
+  font-size: 28px;
 }
 
 .reset strong {
   display: block;
-  margin: 6px 0 4px;
-  font-size: 34px;
+  margin: 4px 0 2px;
+  font-size: 30px;
 }
 
 .reset small {
@@ -288,7 +288,7 @@ button:disabled {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   margin-bottom: 12px;
 }
 
@@ -299,7 +299,7 @@ button:disabled {
 }
 
 .details.compact {
-  min-height: 80px;
+  min-height: 68px;
 }
 
 .about-dialog {
@@ -347,20 +347,23 @@ button:disabled {
 
 body.mini .shell {
   width: 100%;
-  padding: 14px;
+  padding: 10px;
 }
 
 body.mini .topbar {
-  gap: 10px;
-  margin-bottom: 10px;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 body.mini h1 {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 body.mini .topbar p {
-  max-width: 190px;
+  max-width: 170px;
+  margin-top: 3px;
+  font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -374,7 +377,7 @@ body.mini .actions {
 body.mini button,
 body.mini select {
   min-width: 68px;
-  padding: 7px 9px;
+  padding: 6px 8px;
   font-size: 12px;
 }
 
@@ -387,8 +390,8 @@ body.mini .details {
 }
 
 body.mini .status-banner {
-  padding: 9px 10px;
-  margin-bottom: 10px;
+  padding: 8px 9px;
+  margin-bottom: 8px;
   font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -396,39 +399,40 @@ body.mini .status-banner {
 }
 
 body.mini .window-grid {
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-bottom: 0;
 }
 
 body.mini .limit-card {
-  min-height: 166px;
-  padding: 12px;
+  min-height: 132px;
+  padding: 9px;
 }
 
 body.mini .limit-card-header {
-  margin-bottom: 10px;
+  margin-bottom: 7px;
 }
 
 body.mini .limit-card h2 {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 body.mini .stats {
-  gap: 8px;
-  margin: 10px 0;
+  gap: 6px;
+  margin: 7px 0;
 }
 
 body.mini .stats div,
 body.mini .reset {
-  padding: 8px;
+  padding: 6px;
 }
 
 body.mini .stats strong {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 body.mini .reset strong {
-  font-size: 18px;
+  font-size: 17px;
 }
 
 body.mini .reset small {
@@ -454,4 +458,21 @@ body.mini .reset small {
     grid-template-columns: 1fr;
   }
 
+}
+
+body.mini .shell {
+  padding: 10px;
+}
+
+body.mini .topbar {
+  align-items: flex-start;
+  flex-direction: row;
+}
+
+body.mini .actions {
+  flex-wrap: nowrap;
+}
+
+body.mini .window-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
