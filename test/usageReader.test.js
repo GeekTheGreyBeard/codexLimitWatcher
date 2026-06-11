@@ -77,6 +77,39 @@ test("normalizes authenticated Codex usage response windows", () => {
   assert.equal(rateLimits.secondary.windowMinutes, 10080);
 });
 
+test("normalizes authenticated Spark limits from additional rate limits", () => {
+  const summary = summarizeAuthenticatedUsage(
+    {
+      sourceUrl: "https://chatgpt.com/backend-api/wham/usage",
+      account: { signedIn: true, planType: "pro", accountId: "acct_123" },
+      body: {
+        plan_type: "pro",
+        rate_limit: {
+          primary_window: { used_percent: 1, reset_at: 200, limit_window_seconds: 18000 },
+          secondary_window: { used_percent: 2, reset_at: 604800, limit_window_seconds: 604800 }
+        },
+        additional_rate_limits: [
+          {
+            limit_name: "GPT-5.3-Codex-Spark",
+            metered_feature: "codex_bengalfox",
+            rate_limit: {
+              primary_window: { used_percent: 33, reset_at: 300, limit_window_seconds: 18000 },
+              secondary_window: { used_percent: 44, reset_at: 604900, limit_window_seconds: 604800 }
+            }
+          }
+        ]
+      }
+    },
+    { now: 0 }
+  );
+
+  assert.equal(summary.windows.length, 4);
+  assert.deepEqual(
+    summary.windows.map((window) => `${window.limitName}:${window.name}:${window.usedPercent}`),
+    ["Codex:5-hour:1", "Codex:weekly:2", "GPT-5.3-Codex-Spark:5-hour:33", "GPT-5.3-Codex-Spark:weekly:44"]
+  );
+});
+
 test("summarizes authenticated usage without exposing OAuth tokens", () => {
   const summary = summarizeAuthenticatedUsage(
     {

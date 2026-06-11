@@ -5,7 +5,7 @@ Standalone Linux desktop app for monitoring Codex 5-hour and weekly usage-limit 
 ## Features
 
 - ChatGPT OAuth sign-in using the Codex public client and PKCE.
-- Authenticated Codex usage fetch for 5-hour and weekly reset windows.
+- Authenticated Codex usage fetch for 5-hour and weekly reset windows, including additional Spark model limits when returned.
 - Optional auto-refresh with `1m`, `5m`, `10m`, `15m`, and `30m` intervals; fresh installs default to `5m`.
 - Light and dark display modes.
 - Mini mode for a compact, scrollbar-free status view.

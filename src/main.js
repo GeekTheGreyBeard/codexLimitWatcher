@@ -12,10 +12,10 @@ if (process.platform === "linux") {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 980,
-    height: 680,
-    minWidth: 760,
-    minHeight: 520,
+    width: 760,
+    height: 600,
+    minWidth: 680,
+    minHeight: 580,
     title: "Codex Limit Watcher",
     backgroundColor: "#f6f7f8",
     webPreferences: {
@@ -45,8 +45,8 @@ ipcMain.handle("window:setMiniMode", (event, enabled) => {
     win.setSize(420, 320);
     return;
   }
-  win.setMinimumSize(760, 520);
-  win.setSize(980, 680);
+  win.setMinimumSize(680, 580);
+  win.setSize(760, 600);
 });
 ipcMain.handle("link:open", (_event, url) => {
   if (typeof url === "string" && url.startsWith("https://")) {

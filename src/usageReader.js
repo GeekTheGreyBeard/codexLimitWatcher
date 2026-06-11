@@ -38,13 +38,15 @@ function normalizeRateLimits(raw) {
   const primary = isJsonObject(raw.primary) ? raw.primary : null;
   const secondary = isJsonObject(raw.secondary) ? raw.secondary : null;
   if (!primary && !secondary) return null;
+  const limitName = raw.limit_name ?? raw.limitName ?? "Codex";
   return {
     limitId: raw.limit_id ?? raw.limitId ?? "codex",
-    limitName: raw.limit_name ?? raw.limitName ?? null,
+    limitName,
     primary: normalizeWindow(primary, "5-hour"),
     secondary: normalizeWindow(secondary, "weekly"),
     planType: raw.plan_type ?? raw.planType ?? null,
-    rateLimitReachedType: raw.rate_limit_reached_type ?? raw.rateLimitReachedType ?? null
+    rateLimitReachedType: raw.rate_limit_reached_type ?? raw.rateLimitReachedType ?? null,
+    additional: normalizeAdditionalRateLimits(raw.additional_rate_limits ?? raw.additionalRateLimits)
   };
 }
 
@@ -54,13 +56,35 @@ function normalizeWhamUsage(raw) {
   if (!isJsonObject(rateLimit)) return null;
   const primary = rateLimit.primary_window ?? rateLimit.primaryWindow ?? rateLimit.primary;
   const secondary = rateLimit.secondary_window ?? rateLimit.secondaryWindow ?? rateLimit.secondary;
+  const limitName = raw.limit_name ?? raw.limitName ?? "Codex";
   return {
     limitId: raw.limit_id ?? raw.limitId ?? "codex",
-    limitName: raw.limit_name ?? raw.limitName ?? null,
+    limitName,
     primary: normalizeUsageWindow(primary, "5-hour"),
     secondary: normalizeUsageWindow(secondary, "weekly"),
     planType: raw.plan_type ?? raw.planType ?? null,
-    rateLimitReachedType: raw.rate_limit_reached_type ?? raw.rateLimitReachedType ?? null
+    rateLimitReachedType: raw.rate_limit_reached_type ?? raw.rateLimitReachedType ?? null,
+    additional: normalizeAdditionalRateLimits(raw.additional_rate_limits ?? raw.additionalRateLimits)
+  };
+}
+
+function normalizeAdditionalRateLimits(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizeAdditionalRateLimit).filter(Boolean);
+}
+
+function normalizeAdditionalRateLimit(raw) {
+  if (!isJsonObject(raw)) return null;
+  const nested = raw.rate_limit ?? raw.rateLimit ?? raw.rate_limits ?? raw.rateLimits;
+  const windows = normalizeWhamUsage({
+    ...raw,
+    rate_limit: isJsonObject(nested) ? nested : raw
+  });
+  if (!windows) return null;
+  return {
+    ...windows,
+    limitId: raw.limit_id ?? raw.limitId ?? raw.metered_feature ?? raw.meteredFeature ?? windows.limitId,
+    limitName: raw.limit_name ?? raw.limitName ?? raw.model ?? windows.limitName
   };
 }
 
@@ -140,9 +164,7 @@ function summarizeAuthenticatedUsage(usage, meta) {
     observedAt: new Date(meta.now).toISOString(),
     planType: rateLimits.planType ?? usage.account?.planType ?? null,
     rateLimitReachedType: rateLimits.rateLimitReachedType,
-    windows: [rateLimits.primary, rateLimits.secondary]
-      .filter(Boolean)
-      .map((window) => summarizeWindow(window, meta.now)),
+    windows: summarizeRateLimitWindows(rateLimits, meta.now),
     tokenUsage: usage.body.token_usage ?? usage.body.tokenUsage ?? null
   };
 }
@@ -216,18 +238,25 @@ function summarizeSnapshot(event, meta) {
     scannedEvents: meta.scannedEvents,
     planType: event.rateLimits.planType,
     rateLimitReachedType: event.rateLimits.rateLimitReachedType,
-    windows: [event.rateLimits.primary, event.rateLimits.secondary]
-      .filter(Boolean)
-      .map((window) => summarizeWindow(window, nowMs)),
+    windows: summarizeRateLimitWindows(event.rateLimits, nowMs),
     tokenUsage: event.tokenUsage
   };
 }
 
-function summarizeWindow(window, nowMs) {
+function summarizeRateLimitWindows(rateLimits, nowMs) {
+  return [rateLimits, ...(rateLimits.additional ?? [])]
+    .flatMap((limit) => [limit.primary, limit.secondary]
+      .filter(Boolean)
+      .map((window) => summarizeWindow(window, nowMs, limit)));
+}
+
+function summarizeWindow(window, nowMs, limit = {}) {
   const resetsAtMs = window.resetsAt * 1000;
   const remainingMs = Math.max(0, resetsAtMs - nowMs);
   return {
     name: window.name,
+    limitId: limit.limitId ?? null,
+    limitName: limit.limitName ?? "Codex",
     windowMinutes: window.windowMinutes,
     usedPercent: window.usedPercent,
     remainingPercent: window.usedPercent === null ? null : Math.max(0, 100 - window.usedPercent),

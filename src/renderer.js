@@ -38,32 +38,46 @@ function pct(value) {
 function renderWindow(window) {
   const used = window.usedPercent ?? 0;
   const tone = used >= 100 ? "critical" : used >= 85 ? "warning" : "normal";
+  const limitName = window.limitName ?? "Codex";
   return `
     <article class="limit-card ${tone}">
       <div class="limit-card-header">
-        <h2>${window.name}</h2>
+        <div>
+          <h2>${window.name}</h2>
+          <p>${limitName}</p>
+        </div>
         <span>${window.windowMinutes} min</span>
       </div>
       <div class="meter" aria-label="${window.name} usage">
         <div style="width: ${Math.max(0, Math.min(100, used))}%"></div>
       </div>
-      <div class="stats">
-        <div>
+      <div class="card-metrics">
+        <div class="metric">
           <span>Used</span>
           <strong>${pct(window.usedPercent)}</strong>
         </div>
-        <div>
+        <div class="metric">
           <span>Left</span>
           <strong>${pct(window.remainingPercent)}</strong>
         </div>
-      </div>
-      <div class="reset">
-        <span>Reset</span>
-        <strong>${window.remainingText}</strong>
-        <small>${window.resetsAt ? new Date(window.resetsAt).toLocaleString() : "Unknown"}</small>
+        <div class="metric reset">
+          <span>Reset</span>
+          <strong>${window.remainingText}</strong>
+          <small>${window.resetsAt ? new Date(window.resetsAt).toLocaleString() : "Unknown"}</small>
+        </div>
       </div>
     </article>
   `;
+}
+
+function findWindow(windows, limitName, windowMinutes) {
+  return windows.find((item) => item.windowMinutes === windowMinutes && item.limitName === limitName);
+}
+
+function summarizeLimitStatus(windows, limitName, fallbackLabel) {
+  const primary = findWindow(windows, limitName, 300);
+  const weekly = findWindow(windows, limitName, 10080);
+  return `${fallbackLabel}: 5-hour ${primary?.remainingText ?? "unknown"}, weekly ${weekly?.remainingText ?? "unknown"}`;
 }
 
 function maskedAccountId(accountId) {
@@ -145,12 +159,12 @@ async function refresh() {
       windowGrid.innerHTML = "";
       return;
     }
-    const primary = snapshot.windows.find((item) => item.windowMinutes === 300);
-    const weekly = snapshot.windows.find((item) => item.windowMinutes === 10080);
+    const codexSummary = summarizeLimitStatus(snapshot.windows, "Codex", "Codex");
+    const sparkSummary = summarizeLimitStatus(snapshot.windows, "GPT-5.3-Codex-Spark", "Spark");
     subtitle.textContent = `Plan ${snapshot.planType ?? "unknown"}; observed ${new Date(snapshot.observedAt).toLocaleString()}`;
     statusBanner.textContent = snapshot.rateLimitReachedType
       ? `Codex reports a reached limit: ${snapshot.rateLimitReachedType}`
-      : `5-hour reset in ${primary?.remainingText ?? "unknown"}; weekly reset in ${weekly?.remainingText ?? "unknown"}`;
+      : `${codexSummary}; ${sparkSummary}`;
     statusBanner.className = snapshot.rateLimitReachedType ? "status-banner critical" : "status-banner";
     windowGrid.innerHTML = snapshot.windows.map(renderWindow).join("");
   } finally {
