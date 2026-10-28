@@ -1,79 +1,73 @@
 # Codex Limit Watcher
 
-Standalone Linux desktop app for monitoring Codex 5-hour and weekly usage-limit resets.
+Linux desktop app that shows your Codex 5-hour and weekly usage limits, and when each one resets.
 
-## Features
+## What it does
 
-- ChatGPT OAuth sign-in using the Codex public client and PKCE.
-- Authenticated Codex usage fetch for 5-hour and weekly reset windows, including additional Spark model limits when returned.
-- Optional auto-refresh with `1m`, `5m`, `10m`, `15m`, and `30m` intervals; fresh installs default to `5m`.
-- Light and dark display modes.
-- Mini mode for a compact, scrollbar-free status view.
-- Account number masking by default, with an explicit show/hide control.
-- About dialog with links to GeekTheGreyBeard's GitHub profile and ReesAdmin.com.
-- Wayland-friendly Electron launch path for Kubuntu and other Linux desktops.
-- Local token storage in the app user-data directory with owner-only file permissions.
-- MIT licensed for open-source release.
+Sign in with ChatGPT. The app opens ChatGPT OAuth in your browser, finishes sign-in with PKCE and a localhost callback, and saves tokens in the Electron user-data directory as `auth.json` with owner-only `0600` permissions. A saved access token is refreshed when fewer than two minutes remain before it expires.
 
-## Status
+It then reads the Codex usage endpoint and shows each limit window:
 
-This project uses the same ChatGPT OAuth issuer and localhost callback pattern used by the official Codex client. The Codex usage endpoint is not yet a stable public OpenAI API, so response normalization is intentionally isolated in `src/usageReader.js`.
+- Used percent, percent left, and time until reset
+- Codex 5-hour and weekly windows
+- Extra windows included in the response, including Spark (`GPT-5.3-Codex-Spark`) when that data is present
 
-## Screenshots
+The header shows your plan and when the numbers were read. The status line lists Codex and Spark reset times. Missing Spark data shows as unknown. If Codex reports a reached limit, the status line names that limit. Cards use a warning style at 85% used and a critical style at 100%.
 
-Normal light mode:
+Auto-refresh is optional and starts off. Intervals are 1, 5, 10, 15, and 30 minutes; a fresh install uses 5 minutes. Dark mode is a toggle, and light mode is the default. Mini mode shrinks the window to a compact card view and hides sign-in, theme, auto-refresh, account details, and About. The account id stays masked until you show it.
 
-![Codex Limit Watcher normal light mode](docs/assets/screenshots/codex-limit-watcher-normal-light.png)
+The usage endpoint is not a documented stable public API. Parsing lives in `src/usageReader.js`.
 
-Normal dark mode:
+## Requirements
 
-![Codex Limit Watcher normal dark mode](docs/assets/screenshots/codex-limit-watcher-normal-dark.png)
+- Linux
+- Node.js 22.12 or newer, and npm (the Electron 42 dependency requires this Node version)
+- A browser for ChatGPT sign-in
+- Localhost callback on `127.0.0.1` port `1455`, or port `1457` if `1455` is already in use
 
-Mini light mode:
-
-![Codex Limit Watcher mini light mode](docs/assets/screenshots/codex-limit-watcher-mini-light.png)
-
-Mini dark mode:
-
-![Codex Limit Watcher mini dark mode](docs/assets/screenshots/codex-limit-watcher-mini-dark.png)
-
-## Run
+## Setup
 
 ```bash
 npm install
 npm run start:wayland
 ```
 
-CLI status check using local development fallback:
+`npm run start:wayland` launches Electron on Wayland, with Wayland window decorations, Vulkan disabled, and the GPU disabled. `npm start` launches Electron with the switches the app sets on Linux: Wayland window decorations, Vulkan disabled, GPU disabled, and an automatic Ozone platform hint.
 
-```bash
-CODEX_LIMIT_WATCHER_LOCAL_FALLBACK=1 npm run status
-```
-
-Install the desktop launcher:
+Add a desktop launcher:
 
 ```bash
 ./scripts/install-desktop-entry.sh
 ```
 
-## Authentication
+That writes `codex-limit-watcher.desktop` under `${XDG_DATA_HOME:-~/.local/share}/applications`. The launcher runs `scripts/codex-limit-watcher`, which starts the app with the same Wayland flags.
 
-1. Launch the app.
-2. Select `Sign in`.
-3. Complete ChatGPT sign-in in the browser.
-4. Return to the app after the localhost callback succeeds.
+## Usage
 
-Tokens are stored locally for this app only and are not printed by tests or status output.
+1. Choose **Sign in**.
+2. Complete ChatGPT sign-in in the browser.
+3. After the localhost page says sign-in is complete, return to the app.
+4. Read the cards, or choose **Refresh**. **Sign out** deletes `auth.json`.
 
-## Verification
+Print a JSON snapshot from the terminal:
+
+```bash
+npm run status
+```
+
+That command prints a signed-out snapshot. To print the newest `token_count` rate-limit event from session logs in `~/.codex` and `~/.openclaw/agents`:
+
+```bash
+CODEX_LIMIT_WATCHER_LOCAL_FALLBACK=1 npm run status
+```
+
+Status output and tests leave OAuth tokens out of what they print.
 
 ```bash
 npm test
 npm audit
 ```
 
-For Wayland verification, launch with `npm run start:wayland` and confirm the app opens under the active Wayland session.
-
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
